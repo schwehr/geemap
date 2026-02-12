@@ -4095,7 +4095,7 @@ class Map(core.Map):
         Returns:
             streamlit.components: components.html object.
         """
-        import streamlit.components.v1 as components  # pytype: disable=import-error
+        import streamlit.components.v1 as components
 
         return components.html(
             self.to_html(), width=width, height=height, scrolling=scrolling
@@ -4823,7 +4823,8 @@ class Map(core.Map):
             str: The HTML string to use in Gradio.
         """
         print(
-            "The ipyleaflet plotting backend does not support this function. Please use the folium backend instead."
+            "The ipyleaflet plotting backend does not support this function. "
+            "Please use the folium backend instead."
         )
 
     def add_search_control(
