@@ -740,21 +740,21 @@ def ee_export_image_collection_to_asset(
 
 
 def ee_export_image_collection_to_cloud_storage(
-    ee_object,
-    descriptions=None,
-    bucket=None,
-    fileNamePrefix=None,
-    dimensions=None,
+    ee_object: ee.ImageCollection,
+    descriptions: list[str] | None = None,
+    bucket: str | None = None,
+    fileNamePrefix: str | None = None,
+    dimensions: int | str | None = None,
     region=None,
-    scale=None,
-    crs=None,
+    scale: float | None = None,
+    crs: str | None = None,
     crsTransform=None,
-    maxPixels=None,
-    shardSize=None,
-    fileDimensions=None,
-    skipEmptyTiles=None,
-    fileFormat=None,
-    formatOptions=None,
+    maxPixels: int | None = None,
+    shardSize: int | None = None,
+    fileDimensions: int | tuple[int, int] | None = None,
+    skipEmptyTiles: bool | None = None,
+    fileFormat: str | None = None,
+    formatOptions: dict[str, Any] | None = None,
     **kwargs,
 ):
     """Creates a batch task to export an ImageCollection to a Google Cloud bucket.
@@ -763,44 +763,39 @@ def ee_export_image_collection_to_cloud_storage(
         ee_object: The image collection to export.
         descriptions: A list of human-readable names of the tasks.
         bucket: The name of a Cloud Storage bucket for the export.
-        fileNamePrefix: Cloud Storage object name prefix for the export.
-            Defaults to the name of the task.
-        dimensions: The dimensions of the exported image. Takes either a
-            single positive integer as the maximum dimension or "WIDTHxHEIGHT"
-            where WIDTH and HEIGHT are each positive integers.
-        region: The lon,lat coordinates for a LinearRing or Polygon
-            specifying the region to export. Can be specified as a nested
-            lists of numbers or a serialized string. Defaults to the image's
-            region.
-        scale: The resolution in meters per pixel. Defaults to the
-            native resolution of the image asset unless a crsTransform
-            is specified.
-        crs: The coordinate reference system of the exported image's
-            projection. Defaults to the image's default projection.
-        crsTransform: A comma-separated string of 6 numbers describing
-            the affine transform of the coordinate reference system of the
-            exported image's projection, in the order: xScale, xShearing,
-            xTranslation, yShearing, yScale and yTranslation. Defaults to
-            the image's native CRS transform.
-        maxPixels: The maximum allowed number of pixels in the exported
-            image. The task will fail if the exported region covers more
-            pixels in the specified projection. Defaults to 100,000,000.
-        shardSize: Size in pixels of the tiles in which this image will be
-            computed. Defaults to 256.
-        fileDimensions: The dimensions in pixels of each image file, if the
-            image is too large to fit in a single file. May specify a
-            single number to indicate a square shape, or a tuple of two
-            dimensions to indicate (width,height). Note that the image will
-            still be clipped to the overall image dimensions. Must be a
-            multiple of shardSize.
-        skipEmptyTiles: If true, skip writing empty (i.e. fully-masked)
-            image tiles. Defaults to false.
-        fileFormat: The string file format to which the image is exported.
-            Currently only 'GeoTIFF' and 'TFRecord' are supported, defaults to
-            'GeoTIFF'.
+        fileNamePrefix: Cloud Storage object name prefix for the export.  Defaults to
+            the name of the task.
+        dimensions: The dimensions of the exported image. Takes either a single positive
+            integer as the maximum dimension or "WIDTHxHEIGHT" where WIDTH and HEIGHT
+            are each positive integers.
+        region: The lon,lat coordinates for a LinearRing or Polygon specifying the
+            region to export. Can be specified as a nested lists of numbers or a
+            serialized string. Defaults to the image's region.
+        scale: The resolution in meters per pixel. Defaults to the native resolution of
+            the image asset unless a crsTransform is specified.
+        crs: The coordinate reference system of the exported image's projection.
+            Defaults to the image's default projection.
+        crsTransform: A comma-separated string of 6 numbers describing the affine
+            transform of the coordinate reference system of the exported image's
+            projection, in the order: xScale, xShearing, xTranslation, yShearing, yScale
+            and yTranslation. Defaults to the image's native CRS transform.
+        maxPixels: The maximum allowed number of pixels in the exported image. The task
+            will fail if the exported region covers more pixels in the specified
+            projection. Defaults to 100,000,000.
+        shardSize: Size in pixels of the tiles in which this image will be computed.
+            Defaults to 256.
+        fileDimensions: The dimensions in pixels of each image file, if the image is too
+            large to fit in a single file. May specify a single number to indicate a
+            square shape, or a tuple of two dimensions to indicate (width,height). Note
+            that the image will still be clipped to the overall image dimensions. Must
+            be a multiple of shardSize.
+        skipEmptyTiles: If true, skip writing empty (i.e. fully-masked) image
+            tiles. Defaults to false.
+        fileFormat: The string file format to which the image is exported.  Currently
+            only 'GeoTIFF' and 'TFRecord' are supported, defaults to 'GeoTIFF'.
         formatOptions: A dictionary of string keys to format specific options.
-        **kwargs: Holds other keyword arguments that may have been deprecated
-            such as 'crs_transform'.
+        **kwargs: Holds other keyword arguments that may have been deprecated such as
+            'crs_transform'.
     """
     if not isinstance(ee_object, ee.ImageCollection):
         raise ValueError("The ee_object must be an ee.ImageCollection.")
@@ -848,7 +843,7 @@ def ee_export_image_collection_to_cloud_storage(
 
 
 def ee_export_geojson(
-    ee_object: Any,
+    ee_object: ee.FeatureCollection,
     filename: str | None = None,
     selectors: list[str] | None = None,
     timeout: int = 300,
@@ -900,11 +895,9 @@ def ee_export_geojson(
                 return
 
     try:
-        # print('Generating URL ...')
         url = ee_object.getDownloadURL(
             filetype=filetype, selectors=selectors, filename=name
         )
-        # print('Downloading data from {}\nPlease wait ...'.format(url))
         r = None
         r = requests.get(url, stream=True, timeout=timeout, proxies=proxies)
 
@@ -938,14 +931,14 @@ def ee_export_geojson(
 
 
 def ee_export_vector(
-    ee_object: Any,
+    ee_object: ee.FeatureCollection,
     filename: str,
     selectors: list[str] | None = None,
     verbose: bool = True,
     keep_zip: bool = False,
     timeout: int = 300,
     proxies: dict[str, Any] | None = None,
-):
+) -> None:
     """Exports Earth Engine FeatureCollection to other formats.
 
     Includes shp, csv, json, kml, and kmz.
@@ -953,11 +946,11 @@ def ee_export_vector(
     Args:
         ee_object: ee.FeatureCollection to export.
         filename: Output file name.
-        selectors: A list of attributes to export. Defaults to None.
+        selectors: A list of attributes to export.
         verbose: Whether to print out descriptive text.
         keep_zip: Whether to keep the shapefile as a zip file.
-        timeout: Timeout in seconds. Defaults to 300 seconds.
-        proxies: A dictionary of proxies to use. Defaults to None.
+        timeout: Timeout in seconds.
+        proxies: A dictionary of proxies to use.
     """
     if not isinstance(ee_object, ee.FeatureCollection):
         raise ValueError("ee_object must be an ee.FeatureCollection")
